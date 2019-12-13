@@ -48,7 +48,7 @@ def save_comic_server(ACCESS_TOKEN, server, photo, hashh):
 
 def publish_comic_server(ACCESS_TOKEN, data, message):
     url = 'https://api.vk.com/method/wall.post?'
-    attachments = f'photo{str(data['owner_id'])}_{str(data['media_id'])}'
+    attachments = f"photo{str(data['owner_id'])}_{str(data['media_id'])}"
     params = {'access_token': ACCESS_TOKEN, 'v': '5.103', 'owner_id': '-189760742', 'from_group': '1',
               'message': message, 'attachments': attachments}
     response = requests.get(url, params=params)
