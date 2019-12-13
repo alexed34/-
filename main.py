@@ -38,7 +38,7 @@ def upload_comic_server(name, url):
 def save_comic_server(ACCESS_TOKEN, server, photo, hashh):
     url = 'https://api.vk.com/method/photos.saveWallPhoto?'
     params = {'group_id': '189760742', 'access_token': ACCESS_TOKEN, 'v': '5.103', 'server': server,
-              'photo': photo, 'hash': hashh}
+              'photo': photo, 'hashh': hashh}
     response = requests.post(url, params=params)
     response.raise_for_status()
     response = response.json().get('response')[0]
@@ -71,8 +71,8 @@ def main():
     json_comic_server = upload_comic_server(data_comic['name_image'], upload_url)
     server = json_comic_server['server']
     photo = json_comic_server['photo']
-    hash = json_comic_server['hash']
-    response_save_comic = save_comic_server(ACCESS_TOKEN, server, photo, hash)
+    hashh = json_comic_server['hashh']
+    response_save_comic = save_comic_server(ACCESS_TOKEN, server, photo, hashh)
     publish_comic_server(ACCESS_TOKEN, response_save_comic, data_comic['comment'])
     os.remove(f"{path}/{data_comic['name_image']}")
 
