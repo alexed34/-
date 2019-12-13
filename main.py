@@ -12,7 +12,7 @@ def get_requests(url):
 
 
 def get_response_comic(num, get_requests):
-    url = 'https://xkcd.com/' + num + '/info.0.json'
+    url = f'https://xkcd.com/{num}/info.0.json'
     response = get_requests(url)
     url_img = response.get('img')
     data = {'response_image': requests.get(url_img), 'name_image': f"{response.get('num')}.png",
@@ -35,10 +35,10 @@ def upload_comic_server(name, url):
         return response.json()
 
 
-def save_comic_server(ACCESS_TOKEN, server, photo, hash):
+def save_comic_server(ACCESS_TOKEN, server, photo, hashh):
     url = 'https://api.vk.com/method/photos.saveWallPhoto?'
     params = {'group_id': '189760742', 'access_token': ACCESS_TOKEN, 'v': '5.103', 'server': server,
-              'photo': photo, 'hash': hash}
+              'photo': photo, 'hash': hashh}
     response = requests.post(url, params=params)
     response.raise_for_status()
     response = response.json().get('response')[0]
@@ -48,7 +48,7 @@ def save_comic_server(ACCESS_TOKEN, server, photo, hash):
 
 def publish_comic_server(ACCESS_TOKEN, data, message):
     url = 'https://api.vk.com/method/wall.post?'
-    attachments = 'photo' + str(data['owner_id']) + '_' + str(data['media_id'])
+    attachments = f'photo{str(data['owner_id'])}_{str(data['media_id'])}'
     params = {'access_token': ACCESS_TOKEN, 'v': '5.103', 'owner_id': '-189760742', 'from_group': '1',
               'message': message, 'attachments': attachments}
     response = requests.get(url, params=params)
