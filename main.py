@@ -1,3 +1,7 @@
+# для проверяющего
+# у меня сомнения что я все сделал правильно с исключениями, постарался выжать из себя все. 
+# если неправильно то буду благодарен за пример правильного кода что бы понять как это делается на практике.
+
 import requests
 import os
 import random
@@ -8,7 +12,6 @@ def get_request(url):
     response = requests.get(url)
     response.raise_for_status()
     response = response.json()
-    raise_for_error_vk(response)
     return response
 
 
@@ -42,7 +45,6 @@ def save_comic_server(access_token, server, photo, hashh):
               'photo': photo, 'hash': hashh}
     response = requests.post(url, params=params)
     response.raise_for_status()
-    raise_for_error_vk(response.json())
     response = response.json().get('response')[0]
     data = {'owner_id': response['owner_id'], 'media_id': response['id']}
     return data
@@ -61,6 +63,7 @@ def raise_for_error_vk(response):
     if 'error' in response:
         print('error in request in VK')
         print(response.get('error'))
+        raise ValueError
 
 
 def main():
@@ -76,14 +79,20 @@ def main():
     try:
         url = 'https://api.vk.com/method/photos.getWallUploadServer'
         params = {'group_id': group_id, 'access_token': access_token, 'v': '5.103'}
-        server_address_for_downloading_pictures = get_request(requests.get(url, params=params).url).get('response')
-        upload_url = server_address_for_downloading_pictures['upload_url']
+        server_address_for_downloading_pictures = get_request(requests.get(url, params=params).url)
+        raise_for_error_vk(server_address_for_downloading_pictures)
+        upload_url = server_address_for_downloading_pictures['response']['upload_url']
         data_comic_server = upload_comic_server(data_comic['name_image'], upload_url)
         server = data_comic_server['server']
         photo = data_comic_server['photo']
         str_hash = data_comic_server['hash']
         response_save_comic = save_comic_server(access_token, server, photo, str_hash, )
         publish_comic_server(access_token, response_save_comic, data_comic['comment'])
+    except ValueError:
+        print('ValueError')
+    except KeyError:
+        print('KeyError - ошибка')
+
     finally:
         os.remove(f"{path}/{data_comic['name_image']}")
 
