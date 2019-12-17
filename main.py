@@ -1,15 +1,11 @@
-# для проверяющего
-# у меня сомнения что я все сделал правильно с исключениями, постарался выжать из себя все. 
-# если неправильно то буду благодарен за пример правильного кода что бы понять как это делается на практике.
-
 import requests
 import os
 import random
 from dotenv import load_dotenv
 
 
-def get_request(url):
-    response = requests.get(url)
+def get_request(url, params=None):
+    response = requests.get(url, params)
     response.raise_for_status()
     response = response.json()
     return response
@@ -61,9 +57,7 @@ def publish_comic_server(access_token, data, message):
 
 def raise_for_error_vk(response):
     if 'error' in response:
-        print('error in request in VK')
-        print(response.get('error'))
-        raise ValueError
+        raise requests.HTTPError(response['error']['error_msg'])
 
 
 def main():
@@ -73,23 +67,25 @@ def main():
     group_id = '189760742'
     os.makedirs(path, exist_ok=True)
     current_comic = get_request('https://xkcd.com/info.0.json')['num']
-    num = str(random.randint(1, current_comic))
+    num = random.randint(1, current_comic)
     data_comic = get_response_comic(num, get_request)
     write_image(path, data_comic)
     try:
         url = 'https://api.vk.com/method/photos.getWallUploadServer'
         params = {'group_id': group_id, 'access_token': access_token, 'v': '5.103'}
-        server_address_for_downloading_pictures = get_request(requests.get(url, params=params).url)
+        server_address_for_downloading_pictures = get_request(url, params=params)
         raise_for_error_vk(server_address_for_downloading_pictures)
         upload_url = server_address_for_downloading_pictures['response']['upload_url']
         data_comic_server = upload_comic_server(data_comic['name_image'], upload_url)
         server = data_comic_server['server']
         photo = data_comic_server['photo']
-        str_hash = data_comic_server['hash']
-        response_save_comic = save_comic_server(access_token, server, photo, str_hash, )
+        _hash = data_comic_server['hash']
+        response_save_comic = save_comic_server(access_token, server, photo, _hash, )
         publish_comic_server(access_token, response_save_comic, data_comic['comment'])
-    except ValueError:
-        print('ValueError')
+    except requests.HTTPError as e:
+        print("ошибка в запросе к VK:", e.args[0])
+
+
     except KeyError:
         print('KeyError - ошибка')
 
@@ -99,3 +95,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
